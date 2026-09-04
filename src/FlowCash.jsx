@@ -165,13 +165,13 @@ export default function FlowCash() {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-[#EEF4FB] dark:bg-[#0B132B] text-slate-900 dark:text-slate-100 flex font-sans select-none">
+    <div className="w-screen h-screen overflow-hidden bg-[#F2F2F7] dark:bg-[#000000] text-[#1C1C1E] dark:text-[#F2F2F7] flex font-sans select-none">
       {/* 
         Full-screen Desktop App Frame:
         Layout fills the entire viewport and maintains stable structure across all page switches.
         Never expands or shrinks between pages!
       */}
-      <div className="w-full h-full bg-white dark:bg-[#111A33] flex overflow-hidden">
+      <div className="w-full h-full bg-[#F2F2F7] dark:bg-[#000000] flex overflow-hidden">
         
         {/* Left Column: Fixed Sidebar */}
         <Sidebar
@@ -182,7 +182,7 @@ export default function FlowCash() {
         />
 
         {/* Center Column: Stable Workspace Container (Never shrinks or jumps) */}
-        <main className="flex-1 min-w-0 h-full px-6 xl:px-8 py-6 border-l border-slate-100 dark:border-slate-800/80 overflow-hidden flex flex-col justify-between">
+        <main className="flex-1 min-w-0 h-full px-6 xl:px-8 py-5 border-l border-black/[0.05] dark:border-white/[0.08] overflow-hidden flex flex-col justify-between bg-[#F2F2F7] dark:bg-[#000000]">
           {/* Dashboard View */}
           {activeTab === 'dashboard' && (
             <CenterDashboard
@@ -199,16 +199,16 @@ export default function FlowCash() {
             <div className="space-y-4 h-full overflow-y-auto pr-1 flex flex-col">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  <h2 className="text-2xl font-bold text-[#1C1C1E] dark:text-white tracking-tight">
                     History
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-[#8E8E93]">
                     All settled transactions recorded on this device
                   </p>
                 </div>
                 <button
                   onClick={() => setIsImportModalOpen(true)}
-                  className="px-3.5 py-2 rounded-xl bg-[#1D70F7] hover:bg-[#155FD6] text-white text-xs font-bold shadow-sm transition-all"
+                  className="px-4 py-2 rounded-full bg-[#007AFF] hover:bg-[#0071E3] text-white text-xs font-semibold shadow-xs active:scale-[0.98] transition-all"
                 >
                   Import Bank CSV
                 </button>
@@ -231,10 +231,10 @@ export default function FlowCash() {
           {activeTab === 'trends' && (
             <div className="space-y-4 h-full overflow-y-auto pr-1">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h2 className="text-2xl font-bold text-[#1C1C1E] dark:text-white tracking-tight">
                   Trends & Reports
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#8E8E93]">
                   Cash-flow dynamics and category breakdown
                 </p>
               </div>
@@ -254,10 +254,10 @@ export default function FlowCash() {
           {activeTab === 'plan' && (
             <div className="space-y-4 h-full overflow-y-auto pr-1">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h2 className="text-2xl font-bold text-[#1C1C1E] dark:text-white tracking-tight">
                   Spending Caps & Plan
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#8E8E93]">
                   Monthly envelopes, budget limits, and recurring commitments
                 </p>
               </div>
@@ -274,10 +274,10 @@ export default function FlowCash() {
           {activeTab === 'settings' && (
             <div className="space-y-5 h-full overflow-y-auto pr-1 max-w-2xl">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h2 className="text-2xl font-bold text-[#1C1C1E] dark:text-white tracking-tight">
                   Settings
                 </h2>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-[#8E8E93]">
                   Manage theme, local storage folder, and privacy backups
                 </p>
               </div>

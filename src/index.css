@@ -4,24 +4,27 @@
 
 @layer base {
   :root {
-    --color-bg: #f8fafc;
+    --color-bg: #F2F2F7;
     --color-surface: #ffffff;
-    --color-border: #e2e8f0;
-    --color-text: #0f172a;
-    --color-muted: #64748b;
+    --color-border: rgba(60, 60, 67, 0.12);
+    --color-text: #1C1C1E;
+    --color-muted: #8E8E93;
   }
 
   .dark {
-    --color-bg: #0b0f17;
-    --color-surface: #111827;
-    --color-border: #1e293b;
-    --color-text: #f8fafc;
-    --color-muted: #94a3b8;
+    --color-bg: #000000;
+    --color-surface: #1C1C1E;
+    --color-border: rgba(255, 255, 255, 0.12);
+    --color-text: #F2F2F7;
+    --color-muted: #8E8E93;
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-[#090d16] dark:text-slate-100 antialiased selection:bg-emerald-500/20 selection:text-emerald-500 min-h-screen font-sans;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    @apply bg-[#F2F2F7] text-[#1C1C1E] dark:bg-[#000000] dark:text-[#F2F2F7] antialiased selection:bg-[#007AFF]/20 selection:text-[#007AFF] min-h-screen font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   #root {

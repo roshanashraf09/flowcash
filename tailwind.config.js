@@ -7,7 +7,30 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"SF Pro Rounded"',
+          '"SF Pro Display"',
+          '"SF Pro Text"',
+          'Inter',
+          'system-ui',
+          'sans-serif',
+        ],
+        mono: ['"SF Mono"', 'Menlo', 'Monaco', '"JetBrains Mono"', 'monospace'],
+      },
       colors: {
+        ios: {
+          bg: '#F2F2F7',
+          card: '#FFFFFF',
+          border: 'rgba(60, 60, 67, 0.12)',
+          separator: 'rgba(60, 60, 67, 0.08)',
+          blue: '#007AFF',
+          secondary: '#8E8E93',
+          darkBg: '#000000',
+          darkCard: '#1C1C1E',
+        },
         brand: {
           50: '#ecfdf5',
           100: '#d1fae5',
