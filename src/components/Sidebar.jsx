@@ -66,7 +66,7 @@ export default function Sidebar({
       {/* Bottom Area: Privacy Card & iOS Segmented Theme Toggle */}
       <div className="space-y-3 pt-4">
         {/* "Stays on this device" Card */}
-        <div className="rounded-[24px] bg-gradient-to-br from-[#0EA5E9] via-[#0284C7] to-[#0D9488] p-4 text-white shadow-sm text-center space-y-2">
+        <div className="rounded-[24px] bg-gradient-to-br from-[#0EA5E9] via-[#0284C7] to-[#0D9488] dark:bg-gradient-to-br dark:from-[#1A2234] dark:via-[#141A28] dark:to-[#0F1420] dark:border dark:border-white/[0.08] p-4 text-white shadow-sm text-center space-y-2 transition-colors duration-200">
           <div className="flex justify-center">
             {FUN_ICONS.laptop_device}
           </div>

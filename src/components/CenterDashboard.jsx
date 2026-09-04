@@ -64,43 +64,43 @@ export default function CenterDashboard({
         </button>
       </div>
 
-      {/* 2. Hero Cyan-Teal Banner Card with iOS Soft Corners */}
-      <div className="rounded-[26px] bg-gradient-to-r from-[#1398F4] via-[#0EADD0] to-[#0CBFA0] p-5 sm:p-6 text-white shadow-[0_4px_20px_rgba(14,173,208,0.18)] relative overflow-hidden shrink-0">
+      {/* 2. Hero Cash-Flow Display Banner: Calm, sleek midnight tone in dark mode */}
+      <div className="rounded-[26px] bg-gradient-to-r from-[#0284C7] via-[#0891B2] to-[#0D9488] dark:bg-gradient-to-br dark:from-[#1C2438] dark:via-[#141B2B] dark:to-[#0E131F] dark:border dark:border-white/[0.08] p-5 sm:p-6 text-white shadow-[0_4px_20px_rgba(2,132,199,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden shrink-0 transition-colors duration-200">
         {/* Soft background light reflections */}
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/15 dark:bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-sky-100 tracking-wide">
+            <span className="text-xs font-medium text-sky-100 dark:text-slate-400 tracking-wide">
               Left this month
             </span>
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-xl text-white border border-white/25">
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/20 dark:bg-white/[0.08] backdrop-blur-xl text-white dark:text-slate-200 border border-white/25 dark:border-white/[0.1]">
               {currentMonthName}
             </span>
           </div>
 
           <div className="my-2.5">
-            <div className="text-3xl sm:text-4xl font-bold tracking-tight text-white tabular-nums">
+            <div className="text-3xl sm:text-4xl font-bold tracking-tight text-white dark:text-slate-100 tabular-nums">
               £{leftThisMonth.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
 
           {/* Frosted Glass Stat Boxes */}
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mt-3">
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25">
-              <span className="text-[11px] font-medium text-sky-100 block">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/20 dark:bg-white/[0.05] backdrop-blur-xl border border-white/25 dark:border-white/[0.08]">
+              <span className="text-[11px] font-medium text-sky-100 dark:text-emerald-400/90 block">
                 Money in
               </span>
-              <span className="text-base sm:text-lg font-bold tabular-nums text-white mt-0.5 block">
+              <span className="text-base sm:text-lg font-bold tabular-nums text-white dark:text-slate-100 mt-0.5 block">
                 £{moneyIn.toLocaleString('en-GB', { minimumFractionDigits: 0 })}
               </span>
             </div>
 
-            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/25">
-              <span className="text-[11px] font-medium text-sky-100 block">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/20 dark:bg-white/[0.05] backdrop-blur-xl border border-white/25 dark:border-white/[0.08]">
+              <span className="text-[11px] font-medium text-sky-100 dark:text-slate-400 block">
                 Money out
               </span>
-              <span className="text-base sm:text-lg font-bold tabular-nums text-white mt-0.5 block">
+              <span className="text-base sm:text-lg font-bold tabular-nums text-white dark:text-slate-100 mt-0.5 block">
                 £{moneyOut.toLocaleString('en-GB', { minimumFractionDigits: 0 })}
               </span>
             </div>
