@@ -1,0 +1,14 @@
+C:\Users\rosha\.gemini\antigravity\scratch\flowcash\src-tauri\target\release\deps\serde-573a10c37d0f2577.d: C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\rosha\.gemini\antigravity\scratch\flowcash\src-tauri\target\release\build\serde-08f93197ad5be01d\out/private.rs
+
+C:\Users\rosha\.gemini\antigravity\scratch\flowcash\src-tauri\target\release\deps\libserde-573a10c37d0f2577.rlib: C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\rosha\.gemini\antigravity\scratch\flowcash\src-tauri\target\release\build\serde-08f93197ad5be01d\out/private.rs
+
+C:\Users\rosha\.gemini\antigravity\scratch\flowcash\src-tauri\target\release\deps\libserde-573a10c37d0f2577.rmeta: C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs C:\Users\rosha\.gemini\antigravity\scratch\flowcash\src-tauri\target\release\build\serde-08f93197ad5be01d\out/private.rs
+
+C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\lib.rs:
+C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\integer128.rs:
+C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\mod.rs:
+C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\de.rs:
+C:\Users\rosha\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\serde-1.0.229\src\private\ser.rs:
+C:\Users\rosha\.gemini\antigravity\scratch\flowcash\src-tauri\target\release\build\serde-08f93197ad5be01d\out/private.rs:
+
+# env-dep:OUT_DIR=C:\\Users\\rosha\\.gemini\\antigravity\\scratch\\flowcash\\src-tauri\\target\\release\\build\\serde-08f93197ad5be01d\\out

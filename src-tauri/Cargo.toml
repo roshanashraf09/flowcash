@@ -1,4 +1,4 @@
-﻿[package]
+[package]
 name = "flowcash"
 version = "1.0.0"
 description = "FlowCash - Privacy-focused offline-first personal cash-flow engine"
