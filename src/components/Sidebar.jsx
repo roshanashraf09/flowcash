@@ -3,46 +3,45 @@ import {
   LayoutGrid,
   ArrowLeftRight,
   TrendingUp,
-  PiggyBank,
+  Calendar,
   Settings,
-  Sparkles,
-  Rocket,
-  ShieldCheck,
-  Zap
+  Sun,
+  Moon,
+  Laptop
 } from 'lucide-react';
+import { FUN_ICONS } from './FunCategoryIcon';
 
 export default function Sidebar({
   activeTab,
   setActiveTab,
-  onOpenPremium,
+  darkMode,
+  setDarkMode,
 }) {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid, color: '#3b82f6' },
-    { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight, color: '#10b981' },
-    { id: 'reports', label: 'Reports', icon: TrendingUp, color: '#8b5cf6' },
-    { id: 'budgets', label: 'Budgets', icon: PiggyBank, color: '#ec4899' },
-    { id: 'settings', label: 'Settings', icon: Settings, color: '#f59e0b' },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
+    { id: 'history', label: 'History', icon: ArrowLeftRight },
+    { id: 'trends', label: 'Trends', icon: TrendingUp },
+    { id: 'plan', label: 'Plan', icon: Calendar },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (
-    <aside className="w-60 shrink-0 flex flex-col justify-between p-6 bg-transparent select-none">
-      {/* Top: Logo & Menu */}
-      <div className="space-y-8">
+    <aside className="w-56 shrink-0 flex flex-col justify-between p-5 select-none h-full">
+      {/* Top Logo & Navigation */}
+      <div className="space-y-6">
         {/* Brand Logo */}
         <div
           onClick={() => setActiveTab('dashboard')}
-          className="flex items-center gap-2.5 cursor-pointer group"
+          className="flex items-center gap-2.5 cursor-pointer group px-1"
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white shadow-md shadow-purple-500/25 group-hover:scale-105 transition-all">
-            <Sparkles size={20} className="animate-pulse" />
-          </div>
-          <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-            Flow<span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent">Cash</span>
+          {FUN_ICONS.cash_logo}
+          <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+            FlowCash
           </span>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="space-y-2">
+        {/* Menu Items */}
+        <nav className="space-y-1.5">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -51,21 +50,13 @@ export default function Sidebar({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 group ${
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
                   isActive
-                    ? 'bg-[#18181c] text-white shadow-lg shadow-black/10 scale-[1.02]'
+                    ? 'bg-blue-50/80 dark:bg-blue-950/40 text-[#1D70F7] dark:text-blue-400 ring-1 ring-blue-500/20 shadow-xs'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                 }`}
               >
-                <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center transition-transform group-hover:scale-110 ${
-                    isActive
-                      ? 'text-white'
-                      : 'text-slate-500 dark:text-slate-400'
-                  }`}
-                >
-                  <Icon size={18} style={isActive ? { color: '#ffffff' } : { color: item.color }} />
-                </div>
+                <Icon size={18} className={isActive ? 'text-[#1D70F7] dark:text-blue-400' : 'text-slate-500'} />
                 <span>{item.label}</span>
               </button>
             );
@@ -73,32 +64,46 @@ export default function Sidebar({
         </nav>
       </div>
 
-      {/* Bottom: Upgrade Premium Card */}
-      <div className="mt-8">
-        <div className="relative overflow-hidden rounded-[26px] bg-gradient-to-b from-[#1c1c22] to-[#121215] p-5 text-white shadow-xl border border-slate-800/80 group">
-          {/* Subtle colorful neon glow */}
-          <div className="absolute -top-12 -right-12 w-28 h-28 bg-purple-500/20 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-pink-500/15 rounded-full blur-xl pointer-events-none" />
-
-          <h4 className="text-xs font-bold leading-snug pr-2 mb-3">
-            Upgrade our Premium Feature Now !
-          </h4>
-
-          {/* Rocket Graphic */}
-          <div className="relative py-2 flex items-center justify-center">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-purple-600/30 to-indigo-600/30 border border-purple-500/30 flex items-center justify-center relative shadow-inner group-hover:scale-105 transition-transform">
-              <Rocket size={36} className="text-purple-400 transform -rotate-45 drop-shadow-[0_4px_10px_rgba(168,85,247,0.5)]" />
-              <span className="absolute -top-1 right-2 w-2 h-2 rounded-full bg-pink-400 animate-ping" />
-              <span className="absolute bottom-2 left-2 w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" />
-            </div>
+      {/* Bottom Area: Privacy Card & Theme Toggle */}
+      <div className="space-y-3 pt-4">
+        {/* "Stays on this device" Card */}
+        <div className="rounded-2xl bg-gradient-to-br from-[#0EA5E9] via-[#0284C7] to-[#0D9488] p-4 text-white shadow-md shadow-blue-500/10 text-center space-y-2">
+          <div className="flex justify-center">
+            {FUN_ICONS.laptop_device}
           </div>
+          <div>
+            <h4 className="text-xs font-bold tracking-tight">
+              Stays on this device
+            </h4>
+            <p className="text-[10px] text-sky-100/90 leading-tight mt-1 px-1">
+              No accounts and no bank login. Add a folder in Settings to keep your own copy.
+            </p>
+          </div>
+        </div>
 
+        {/* Clean Theme Toggle */}
+        <div className="p-1 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-between text-xs">
           <button
-            onClick={onOpenPremium}
-            className="w-full mt-3 py-2 px-3 rounded-xl bg-slate-700/60 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 text-slate-200 hover:text-white text-xs font-bold transition-all duration-300 shadow-sm flex items-center justify-center gap-1.5 active:scale-95"
+            onClick={() => setDarkMode(false)}
+            className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 font-medium transition-all ${
+              !darkMode
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
-            <Zap size={13} className="text-yellow-400" />
-            <span>Get Premium</span>
+            <Sun size={13} className={!darkMode ? 'text-amber-500' : ''} />
+            <span>Light</span>
+          </button>
+          <button
+            onClick={() => setDarkMode(true)}
+            className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 font-medium transition-all ${
+              darkMode
+                ? 'bg-slate-700 text-white shadow-xs'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <Moon size={13} className={darkMode ? 'text-blue-300' : ''} />
+            <span>Dark</span>
           </button>
         </div>
       </div>

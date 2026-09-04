@@ -1,346 +1,290 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
-import { Film, Car, Zap, UtensilsCrossed, ShoppingBag, Coffee, Plus, Check } from 'lucide-react';
-
-import { getCurrentUser, subscribeToAuth, logoutGoogle } from './auth';
 import Sidebar from './components/Sidebar';
-import TopHeader from './components/TopHeader';
-import HeroStatsCard from './components/HeroStatsCard';
-import RecentTransactionsCard from './components/RecentTransactionsCard';
-import QuickAddExpenseCard from './components/QuickAddExpenseCard';
-import ReportsCard from './components/ReportsCard';
-import SpendingDonutCard from './components/SpendingDonutCard';
-import GoogleAuthModal from './components/GoogleAuthModal';
-import PremiumModal from './components/PremiumModal';
-import AddExpenseModal from './components/AddExpenseModal';
+import CenterDashboard from './components/CenterDashboard';
+import QuickAddPanel from './components/QuickAddPanel';
 import TransactionLedger from './components/TransactionLedger';
 import SpendingCaps from './components/SpendingCaps';
+import CashFlowChart from './components/CashFlowChart';
+import CategoryDonutChart from './components/CategoryDonutChart';
+import RecurringTracker from './components/RecurringTracker';
 import StatementImportModal from './components/StatementImportModal';
 import DataManagerModal from './components/DataManagerModal';
-import { getTransactions, saveTransaction, deleteTransactions, bulkRecategorize, getCategories, updateCategoryCap } from './storage';
+
+import {
+  getTransactions,
+  saveTransaction,
+  deleteTransactions,
+  bulkRecategorize,
+  getCategories,
+  updateCategoryCap,
+  getRecurringRules,
+  saveRecurringRule,
+  deleteRecurringRule,
+  subscribeToStorage
+} from './storage';
 
 export default function FlowCash() {
-  const [currentUser, setCurrentUser] = useState(getCurrentUser());
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'transactions' | 'reports' | 'budgets' | 'settings'
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'history' | 'trends' | 'plan' | 'settings'
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('flowcash_theme') === 'dark';
+    }
+    return false;
+  });
 
-  // Modals
-  const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState(false);
-  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
-  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [transactions, setTransactions] = useState(getTransactions());
+  const [categories, setCategories] = useState(getCategories());
+  const [recurringRules, setRecurringRules] = useState(getRecurringRules());
+  const [scheduledRecorded, setScheduledRecorded] = useState(false);
+
+  // Modals for Import & Backup
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isDataManagerOpen, setIsDataManagerOpen] = useState(false);
 
-  // Financial Stats (Matching Reference Image)
-  const [stats, setStats] = useState({
-    outcome: 2500,
-    income: 5500,
-  });
-
-  // Recent Transactions (Matching Reference Image)
-  const [recentItems, setRecentItems] = useState([
-    { id: 1, title: 'Entertainment', date: '01 Jun, 11.30am', percent: 50, color: '#8b5cf6', icon: Film, amount: 1250 },
-    { id: 2, title: 'Transportation', date: '01 Jun, 11.30am', percent: 25, color: '#06b6d4', icon: Car, amount: 625 },
-    { id: 3, title: 'Utilities', date: '01 Jun, 11.30am', percent: 15, color: '#f59e0b', icon: Zap, amount: 375 },
-    { id: 4, title: 'Food', date: '01 Jun, 11.30am', percent: 15, color: '#10b981', icon: UtensilsCrossed, amount: 375 },
-  ]);
-
-  // Donut Breakdown (Matching Reference Image)
-  const [donutItems, setDonutItems] = useState([
-    { title: 'Entertainment', amount: 1250, color: '#8b5cf6' },
-    { title: 'Transportation', amount: 625, color: '#06b6d4' },
-    { title: 'Utilities', amount: 375, color: '#f59e0b' },
-    { title: 'Food', amount: 375, color: '#10b981' },
-  ]);
-
-  // Ledger storage connection
-  const [allTransactions, setAllTransactions] = useState(getTransactions());
-  const [categories, setCategories] = useState(getCategories());
-
-  // Listen to auth changes
+  // Sync theme
   useEffect(() => {
-    const unsub = subscribeToAuth((user) => {
-      setCurrentUser(user);
-    });
-    return () => unsub();
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('flowcash_theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('flowcash_theme', 'light');
+    }
+  }, [darkMode]);
+
+  // Reactive data sync
+  const refreshData = useCallback(() => {
+    setTransactions(getTransactions());
+    setCategories(getCategories());
+    setRecurringRules(getRecurringRules());
   }, []);
 
-  // Handle adding an expense
-  const handleAddExpense = (expense) => {
-    // 1. Update stats outcome
-    setStats(prev => ({
-      ...prev,
-      outcome: prev.outcome + expense.amount,
-    }));
+  useEffect(() => {
+    refreshData();
+    const unsub = subscribeToStorage(() => refreshData());
+    return () => unsub();
+  }, [refreshData]);
 
-    // 2. Persist to ledger storage
-    saveTransaction({
+  // Handle Quick Add Expense
+  const handleSaveExpense = async (expense) => {
+    await saveTransaction({
       date: expense.date,
-      amount: -Math.abs(expense.amount),
-      category: expense.category.toLowerCase(),
+      amount: expense.amount,
+      category: expense.category,
       description: expense.title,
       paymentMethod: 'Card',
       isRecurring: false,
-      tags: [expense.category.toLowerCase()]
-    });
-    setAllTransactions(getTransactions());
-
-    // 3. Update donut items
-    setDonutItems(prev => {
-      const idx = prev.findIndex(item => item.title.toLowerCase() === expense.category.toLowerCase());
-      if (idx >= 0) {
-        const updated = [...prev];
-        updated[idx] = { ...updated[idx], amount: updated[idx].amount + expense.amount };
-        return updated;
-      }
-      return [...prev, { title: expense.category, amount: expense.amount, color: '#ec4899' }];
+      tags: [expense.category]
     });
 
-    // 4. Update recent items
-    setRecentItems(prev => {
-      const now = new Date();
-      const dateFormatted = `${String(now.getDate()).padStart(2, '0')} ${now.toLocaleDateString('en-US', { month: 'short' })}, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      return [
-        {
-          id: Date.now(),
-          title: expense.title,
-          date: dateFormatted,
-          percent: 20,
-          color: expense.category === 'Food' ? '#10b981' : expense.category === 'Transportation' ? '#06b6d4' : '#8b5cf6',
-          icon: expense.category === 'Food' ? UtensilsCrossed : expense.category === 'Transportation' ? Car : Film,
-          amount: expense.amount
-        },
-        ...prev.slice(0, 3)
-      ];
-    });
-
-    // Confetti micro-celebration
     confetti({
-      particleCount: 60,
+      particleCount: 50,
       spread: 60,
-      origin: { y: 0.7 }
+      origin: { y: 0.6 }
     });
   };
 
-  const handleLogout = () => {
-    logoutGoogle();
-    setIsGoogleAuthOpen(true);
+  // One-click record scheduled rent payment
+  const handleRecordScheduledPayment = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    await saveTransaction({
+      date: today,
+      amount: -950.00,
+      category: 'rent',
+      description: 'Residential Rent (Scheduled)',
+      paymentMethod: 'Direct Debit',
+      isRecurring: true,
+      tags: ['rent', 'fixed']
+    });
+    setScheduledRecorded(true);
+    confetti({ particleCount: 40, spread: 50 });
   };
 
   return (
-    <div className="min-h-screen bg-[#F0F1F5] dark:bg-[#0c0c10] text-slate-900 dark:text-slate-100 flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans selection:bg-purple-500/20 selection:text-purple-600">
-      {/* Main Canvas Container (matches the rounded card UI in the screenshot) */}
-      <div className="w-full max-w-[1380px] bg-white dark:bg-[#121216] rounded-[36px] shadow-2xl shadow-slate-300/50 dark:shadow-black/60 border border-slate-200/80 dark:border-slate-800/80 flex flex-col md:flex-row overflow-hidden transition-all duration-300">
+    <div className="w-screen h-screen overflow-hidden bg-[#EEF4FB] dark:bg-[#0B132B] text-slate-900 dark:text-slate-100 flex items-center justify-center p-3 sm:p-5 font-sans select-none">
+      {/* 
+        Fixed Desktop App Frame: 
+        Layout maintains fixed dimensions across all page switches.
+        Never expands or shrinks!
+      */}
+      <div className="w-full h-full max-w-[1360px] max-h-[860px] bg-white dark:bg-[#111A33] rounded-[32px] shadow-xl shadow-blue-950/5 dark:shadow-black/40 border border-slate-200/80 dark:border-slate-800/80 flex overflow-hidden">
         
-        {/* Left Sidebar */}
+        {/* Left Column: Fixed Sidebar */}
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          onOpenPremium={() => setIsPremiumOpen(true)}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
         />
 
-        {/* Right Main Content Area */}
-        <main className="flex-1 p-6 lg:p-8 space-y-6 overflow-y-auto max-h-[92vh]">
-          {/* Top Header */}
-          <TopHeader
-            currentUser={currentUser}
-            onOpenAddExpense={() => setIsAddExpenseOpen(true)}
-            onOpenGoogleAuth={() => setIsGoogleAuthOpen(true)}
-            onLogout={handleLogout}
-          />
-
-          {/* Tab Content */}
+        {/* Center Column: Stable Workspace Container (Never shrinks or jumps) */}
+        <main className="flex-1 min-w-0 h-full p-6 border-x border-slate-100 dark:border-slate-800/80 overflow-hidden flex flex-col justify-between">
+          {/* Dashboard View */}
           {activeTab === 'dashboard' && (
-            <div className="space-y-6">
-              {/* Row 1: Dark Hero Statistics Banner */}
-              <HeroStatsCard
-                currentUser={currentUser}
-                outcome={stats.outcome}
-                income={stats.income}
-              />
-
-              {/* Row 2: Four Key Modules Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                {/* Center Left: Recent Transactions (5 cols) */}
-                <div className="lg:col-span-4">
-                  <RecentTransactionsCard items={recentItems} />
-                </div>
-
-                {/* Center Middle: Quick Add Expense Dark Card (4 cols) */}
-                <div className="lg:col-span-4">
-                  <QuickAddExpenseCard onAddExpense={handleAddExpense} />
-                </div>
-
-                {/* Right Column: Reports & Donut Breakdown (4 cols) */}
-                <div className="lg:col-span-4 space-y-6 flex flex-col justify-between">
-                  {/* Card 1: Reports Chart with $3400 Tooltip */}
-                  <ReportsCard />
-
-                  {/* Card 2: 50% Center Donut Chart with Category Breakdown */}
-                  <SpendingDonutCard breakdown={donutItems} />
-                </div>
-              </div>
-            </div>
+            <CenterDashboard
+              transactions={transactions}
+              onOpenQuickAdd={() => {}}
+              onRecordScheduledPayment={handleRecordScheduledPayment}
+              scheduledRecorded={scheduledRecorded}
+            />
           )}
 
-          {/* Transactions Tab */}
-          {activeTab === 'transactions' && (
-            <div className="space-y-4">
+          {/* History / Transactions View */}
+          {activeTab === 'history' && (
+            <div className="space-y-4 h-full overflow-y-auto pr-1 flex flex-col">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                    All Transactions
+                  <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                    History
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Search, filter, categorize, and export your cash-flow history
+                    All settled transactions recorded on this device
                   </p>
                 </div>
                 <button
                   onClick={() => setIsImportModalOpen(true)}
-                  className="px-3.5 py-2 rounded-2xl bg-[#18181c] text-white text-xs font-bold hover:bg-black transition-all"
+                  className="px-3.5 py-2 rounded-xl bg-[#1D70F7] hover:bg-[#155FD6] text-white text-xs font-bold shadow-sm transition-all"
                 >
-                  Import Statement
+                  Import Bank CSV
                 </button>
               </div>
 
-              <TransactionLedger
-                transactions={allTransactions}
+              <div className="flex-1 min-h-0">
+                <TransactionLedger
+                  transactions={transactions}
+                  categories={categories}
+                  onEditTransaction={() => {}}
+                  onDeleteTransactions={deleteTransactions}
+                  onBulkRecategorize={bulkRecategorize}
+                  onNewTransaction={() => {}}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Trends / Reports View */}
+          {activeTab === 'trends' && (
+            <div className="space-y-4 h-full overflow-y-auto pr-1">
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Trends & Reports
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Cash-flow dynamics and category breakdown
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="min-h-[300px]">
+                  <CashFlowChart transactions={transactions} />
+                </div>
+                <div className="min-h-[300px]">
+                  <CategoryDonutChart transactions={transactions} categories={categories} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Plan / Budgets View */}
+          {activeTab === 'plan' && (
+            <div className="space-y-4 h-full overflow-y-auto pr-1">
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Spending Caps & Plan
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Monthly envelopes, budget limits, and recurring commitments
+                </p>
+              </div>
+
+              <SpendingCaps
+                transactions={transactions}
                 categories={categories}
-                onEditTransaction={() => setIsAddExpenseOpen(true)}
-                onDeleteTransactions={(ids) => {
-                  deleteTransactions(ids);
-                  setAllTransactions(getTransactions());
-                }}
-                onBulkRecategorize={(ids, cat) => {
-                  bulkRecategorize(ids, cat);
-                  setAllTransactions(getTransactions());
-                }}
-                onNewTransaction={() => setIsAddExpenseOpen(true)}
+                onUpdateCategoryCap={updateCategoryCap}
               />
             </div>
           )}
 
-          {/* Reports Tab */}
-          {activeTab === 'reports' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ReportsCard />
-              <SpendingDonutCard breakdown={donutItems} />
-              <div className="md:col-span-2">
-                <RecentTransactionsCard items={recentItems} />
-              </div>
-            </div>
-          )}
-
-          {/* Budgets Tab */}
-          {activeTab === 'budgets' && (
-            <SpendingCaps
-              transactions={allTransactions}
-              categories={categories}
-              onUpdateCategoryCap={(catId, cap) => {
-                updateCategoryCap(catId, cap);
-                setCategories(getCategories());
-              }}
-            />
-          )}
-
-          {/* Settings Tab */}
+          {/* Settings View */}
           {activeTab === 'settings' && (
-            <div className="max-w-2xl space-y-6">
-              <div className="p-6 rounded-[28px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Google Account Session
-                </h3>
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={currentUser?.avatar}
-                      alt={currentUser?.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div>
-                      <div className="font-bold text-xs text-slate-900 dark:text-white">
-                        {currentUser?.name}
-                      </div>
-                      <div className="text-[11px] text-slate-400 font-mono">
-                        {currentUser?.email}
-                      </div>
-                    </div>
-                  </div>
+            <div className="space-y-5 h-full overflow-y-auto pr-1 max-w-xl">
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Settings
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Manage theme, local storage folder, and privacy backups
+                </p>
+              </div>
 
-                  <button
-                    onClick={() => setIsGoogleAuthOpen(true)}
-                    className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700"
-                  >
-                    Switch Account
-                  </button>
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Appearance
+                </h4>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-600 dark:text-slate-300 font-medium">Theme Mode</span>
+                  <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                    <button
+                      onClick={() => setDarkMode(false)}
+                      className={`px-3 py-1 rounded-lg font-semibold ${!darkMode ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-400'}`}
+                    >
+                      Light
+                    </button>
+                    <button
+                      onClick={() => setDarkMode(true)}
+                      className={`px-3 py-1 rounded-lg font-semibold ${darkMode ? 'bg-slate-700 text-white shadow-xs' : 'text-slate-400'}`}
+                    >
+                      Dark
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="p-6 rounded-[28px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Data Vault & Backups
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Export your full encrypted JSON ledger or restore an existing backup.
+              <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Local Data & Backups
+                </h4>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  All your data stays 100% on this computer. You can export a full formatted JSON backup or import existing statements.
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2.5 pt-1">
                   <button
                     onClick={() => setIsDataManagerOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-[#18181c] text-white text-xs font-bold hover:bg-black"
+                    className="px-4 py-2 rounded-xl bg-[#1D70F7] hover:bg-[#155FD6] text-white text-xs font-bold shadow-sm transition-all"
                   >
-                    Manage Vault & Backups
+                    Manage Local Vault
                   </button>
                   <button
                     onClick={() => setIsImportModalOpen(true)}
-                    className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                   >
-                    Import Bank Statement
+                    Import Statements
                   </button>
                 </div>
               </div>
             </div>
           )}
         </main>
+
+        {/* Right Column: Fixed "Quick add" Panel */}
+        <QuickAddPanel onSaveExpense={handleSaveExpense} />
       </div>
-
-      {/* Google Sign In / Sign Up Modal */}
-      <GoogleAuthModal
-        isOpen={isGoogleAuthOpen}
-        onClose={() => setIsGoogleAuthOpen(false)}
-        onLoginSuccess={(user) => {
-          setCurrentUser(user);
-          confetti({ particleCount: 50, spread: 60 });
-        }}
-      />
-
-      {/* Upgrade Pro Modal */}
-      <PremiumModal
-        isOpen={isPremiumOpen}
-        onClose={() => setIsPremiumOpen(false)}
-      />
-
-      {/* Add Expense Modal */}
-      <AddExpenseModal
-        isOpen={isAddExpenseOpen}
-        onClose={() => setIsAddExpenseOpen(false)}
-        onAddExpense={handleAddExpense}
-      />
 
       {/* Statement Import Modal */}
       <StatementImportModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        onImportComplete={(rows) => {
-          setAllTransactions(getTransactions());
-        }}
+        onImportComplete={() => refreshData()}
         categories={categories}
       />
 
-      {/* Data Vault Modal */}
+      {/* Data Manager Modal */}
       <DataManagerModal
         isOpen={isDataManagerOpen}
         onClose={() => setIsDataManagerOpen(false)}
-        transactionsCount={allTransactions.length}
-        recurringCount={5}
+        transactionsCount={transactions.length}
+        recurringCount={recurringRules.length}
       />
     </div>
   );
