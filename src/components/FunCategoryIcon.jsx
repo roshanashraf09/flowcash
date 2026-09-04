@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 
 /**
  * Fun, fully-filled, colorful vector icons matching the reference image.
@@ -7,7 +7,7 @@
 
 export const FUN_ICONS = {
   groceries: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#E6F9F0" />
       {/* Shopping Cart Body */}
       <path d="M14 16h3l3.5 14h13.5l3-10H19" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
@@ -22,7 +22,7 @@ export const FUN_ICONS = {
   ),
 
   eating_out: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#FFF3E8" />
       {/* Orange Plate */}
       <circle cx="24" cy="24" r="14" fill="#F97316" />
@@ -35,7 +35,7 @@ export const FUN_ICONS = {
   ),
 
   transport: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#E0F2FE" />
       {/* Blue Circle Base */}
       <circle cx="24" cy="24" r="16" fill="#0284C7" />
@@ -53,7 +53,7 @@ export const FUN_ICONS = {
   ),
 
   rent: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#FFE4E6" />
       {/* Red Circular Base */}
       <circle cx="24" cy="24" r="16" fill="#E11D48" />
@@ -69,7 +69,7 @@ export const FUN_ICONS = {
   ),
 
   utilities: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#FEF9C3" />
       {/* Cyan/Blue Circle */}
       <circle cx="24" cy="24" r="16" fill="#0EA5E9" />
@@ -79,7 +79,7 @@ export const FUN_ICONS = {
   ),
 
   subscriptions: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#F3E8FF" />
       {/* Deep Purple Circle */}
       <circle cx="24" cy="24" r="16" fill="#7E22CE" />
@@ -95,7 +95,7 @@ export const FUN_ICONS = {
   ),
 
   other: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#CCFBF1" />
       {/* Teal Circle */}
       <circle cx="24" cy="24" r="16" fill="#0D9488" />
@@ -109,7 +109,7 @@ export const FUN_ICONS = {
   ),
 
   coffee: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#FEF3C7" />
       {/* Amber Circle */}
       <circle cx="24" cy="24" r="16" fill="#D97706" />
@@ -125,7 +125,7 @@ export const FUN_ICONS = {
   ),
 
   home: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#DCFCE7" />
       {/* Mint Green Circle */}
       <circle cx="24" cy="24" r="16" fill="#16A34A" />
@@ -141,7 +141,7 @@ export const FUN_ICONS = {
   ),
 
   phone: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#E0F2FE" />
       {/* Sky Blue Circle */}
       <circle cx="24" cy="24" r="16" fill="#0284C7" />
@@ -154,7 +154,7 @@ export const FUN_ICONS = {
   ),
 
   gym: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#CCFBF1" />
       {/* Aqua/Teal Circle */}
       <circle cx="24" cy="24" r="16" fill="#0F766E" />
@@ -170,7 +170,7 @@ export const FUN_ICONS = {
   ),
 
   travel: (
-    <svg viewBox="0 0 48 48" className="w-10 h-10">
+    <svg viewBox="0 0 48 48" className="w-9 h-9">
       <circle cx="24" cy="24" r="22" fill="#DBEAFE" />
       {/* Ocean Blue Circle */}
       <circle cx="24" cy="24" r="16" fill="#2563EB" />

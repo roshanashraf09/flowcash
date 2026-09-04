@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import Sidebar from './components/Sidebar';
 import CenterDashboard from './components/CenterDashboard';
@@ -102,13 +102,13 @@ export default function FlowCash() {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden bg-[#EEF4FB] dark:bg-[#0B132B] text-slate-900 dark:text-slate-100 flex items-center justify-center p-3 sm:p-5 font-sans select-none">
+    <div className="w-screen h-screen overflow-hidden bg-[#EEF4FB] dark:bg-[#0B132B] text-slate-900 dark:text-slate-100 flex font-sans select-none">
       {/* 
-        Fixed Desktop App Frame: 
-        Layout maintains fixed dimensions across all page switches.
-        Never expands or shrinks!
+        Full-screen Desktop App Frame:
+        Layout fills the entire viewport and maintains stable structure across all page switches.
+        Never expands or shrinks between pages!
       */}
-      <div className="w-full h-full max-w-[1360px] max-h-[860px] bg-white dark:bg-[#111A33] rounded-[32px] shadow-xl shadow-blue-950/5 dark:shadow-black/40 border border-slate-200/80 dark:border-slate-800/80 flex overflow-hidden">
+      <div className="w-full h-full bg-white dark:bg-[#111A33] flex overflow-hidden">
         
         {/* Left Column: Fixed Sidebar */}
         <Sidebar
@@ -119,7 +119,7 @@ export default function FlowCash() {
         />
 
         {/* Center Column: Stable Workspace Container (Never shrinks or jumps) */}
-        <main className="flex-1 min-w-0 h-full p-6 border-x border-slate-100 dark:border-slate-800/80 overflow-hidden flex flex-col justify-between">
+        <main className="flex-1 min-w-0 h-full px-6 xl:px-8 py-6 border-l border-slate-100 dark:border-slate-800/80 overflow-hidden flex flex-col justify-between">
           {/* Dashboard View */}
           {activeTab === 'dashboard' && (
             <CenterDashboard
