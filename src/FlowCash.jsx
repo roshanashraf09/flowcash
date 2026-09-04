@@ -1,373 +1,347 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import {
-  subscribeToStorage,
-  getTransactions,
-  saveTransaction,
-  deleteTransactions,
-  bulkRecategorize,
-  getCategories,
-  updateCategoryCap,
-  getRecurringRules,
-  saveRecurringRule,
-  deleteRecurringRule,
-  importTransactions
-} from './storage';
+import { Film, Car, Zap, UtensilsCrossed, ShoppingBag, Coffee, Plus, Check } from 'lucide-react';
 
-import Navbar from './components/Navbar';
-import MetricCards from './components/MetricCards';
-import CashFlowChart from './components/CashFlowChart';
-import CategoryDonutChart from './components/CategoryDonutChart';
-import UpcomingBills from './components/UpcomingBills';
+import { getCurrentUser, subscribeToAuth, logoutGoogle } from './auth';
+import Sidebar from './components/Sidebar';
+import TopHeader from './components/TopHeader';
+import HeroStatsCard from './components/HeroStatsCard';
+import RecentTransactionsCard from './components/RecentTransactionsCard';
+import QuickAddExpenseCard from './components/QuickAddExpenseCard';
+import ReportsCard from './components/ReportsCard';
+import SpendingDonutCard from './components/SpendingDonutCard';
+import GoogleAuthModal from './components/GoogleAuthModal';
+import PremiumModal from './components/PremiumModal';
+import AddExpenseModal from './components/AddExpenseModal';
 import TransactionLedger from './components/TransactionLedger';
 import SpendingCaps from './components/SpendingCaps';
-import RecurringTracker from './components/RecurringTracker';
-import TransactionModal from './components/TransactionModal';
 import StatementImportModal from './components/StatementImportModal';
 import DataManagerModal from './components/DataManagerModal';
+import { getTransactions, saveTransaction, deleteTransactions, bulkRecategorize, getCategories, updateCategoryCap } from './storage';
 
 export default function FlowCash() {
-  // Navigation & Theme
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'ledger' | 'caps' | 'recurring'
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('flowcash_theme') !== 'light';
-    }
-    return true;
-  });
-
-  // Core Data State
-  const [transactions, setTransactions] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [recurringRules, setRecurringRules] = useState([]);
+  const [currentUser, setCurrentUser] = useState(getCurrentUser());
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' | 'transactions' | 'reports' | 'budgets' | 'settings'
 
   // Modals
-  const [isTxModalOpen, setIsTxModalOpen] = useState(false);
-  const [editingTx, setEditingTx] = useState(null);
+  const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState(false);
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isDataManagerModalOpen, setIsDataManagerModalOpen] = useState(false);
+  const [isDataManagerOpen, setIsDataManagerOpen] = useState(false);
 
-  // Toast notifications
-  const [toast, setToast] = useState(null);
+  // Financial Stats (Matching Reference Image)
+  const [stats, setStats] = useState({
+    outcome: 2500,
+    income: 5500,
+  });
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3500);
-  };
+  // Recent Transactions (Matching Reference Image)
+  const [recentItems, setRecentItems] = useState([
+    { id: 1, title: 'Entertainment', date: '01 Jun, 11.30am', percent: 50, color: '#8b5cf6', icon: Film, amount: 1250 },
+    { id: 2, title: 'Transportation', date: '01 Jun, 11.30am', percent: 25, color: '#06b6d4', icon: Car, amount: 625 },
+    { id: 3, title: 'Utilities', date: '01 Jun, 11.30am', percent: 15, color: '#f59e0b', icon: Zap, amount: 375 },
+    { id: 4, title: 'Food', date: '01 Jun, 11.30am', percent: 15, color: '#10b981', icon: UtensilsCrossed, amount: 375 },
+  ]);
 
-  // Sync theme to <html> class
+  // Donut Breakdown (Matching Reference Image)
+  const [donutItems, setDonutItems] = useState([
+    { title: 'Entertainment', amount: 1250, color: '#8b5cf6' },
+    { title: 'Transportation', amount: 625, color: '#06b6d4' },
+    { title: 'Utilities', amount: 375, color: '#f59e0b' },
+    { title: 'Food', amount: 375, color: '#10b981' },
+  ]);
+
+  // Ledger storage connection
+  const [allTransactions, setAllTransactions] = useState(getTransactions());
+  const [categories, setCategories] = useState(getCategories());
+
+  // Listen to auth changes
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('flowcash_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('flowcash_theme', 'light');
-    }
-  }, [darkMode]);
-
-  // Load initial data
-  const refreshData = useCallback(() => {
-    setTransactions(getTransactions());
-    setCategories(getCategories());
-    setRecurringRules(getRecurringRules());
-  }, []);
-
-  useEffect(() => {
-    refreshData();
-    // Subscribe to storage persistence updates
-    const unsubscribe = subscribeToStorage(() => {
-      refreshData();
+    const unsub = subscribeToAuth((user) => {
+      setCurrentUser(user);
     });
-    return () => unsubscribe();
-  }, [refreshData]);
-
-  // Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      // Don't trigger when user is typing in an input or textarea
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-
-      if (e.key === 'n' || e.key === 'N') {
-        e.preventDefault();
-        setEditingTx(null);
-        setIsTxModalOpen(true);
-      } else if (e.key === 'i' || e.key === 'I') {
-        e.preventDefault();
-        setIsImportModalOpen(true);
-      } else if (e.key === '1') {
-        setActiveTab('dashboard');
-      } else if (e.key === '2') {
-        setActiveTab('ledger');
-      } else if (e.key === '3') {
-        setActiveTab('caps');
-      } else if (e.key === '4') {
-        setActiveTab('recurring');
-      } else if (e.key === 'Escape') {
-        setIsTxModalOpen(false);
-        setIsImportModalOpen(false);
-        setIsDataManagerModalOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => unsub();
   }, []);
 
-  // Handlers for Transactions
-  const handleSaveTransaction = async (tx) => {
-    try {
-      await saveTransaction(tx);
-      showToast(tx.id ? 'Transaction updated successfully' : 'Transaction recorded successfully');
-    } catch (err) {
-      showToast(err.message || 'Failed to record transaction', 'error');
-    }
+  // Handle adding an expense
+  const handleAddExpense = (expense) => {
+    // 1. Update stats outcome
+    setStats(prev => ({
+      ...prev,
+      outcome: prev.outcome + expense.amount,
+    }));
+
+    // 2. Persist to ledger storage
+    saveTransaction({
+      date: expense.date,
+      amount: -Math.abs(expense.amount),
+      category: expense.category.toLowerCase(),
+      description: expense.title,
+      paymentMethod: 'Card',
+      isRecurring: false,
+      tags: [expense.category.toLowerCase()]
+    });
+    setAllTransactions(getTransactions());
+
+    // 3. Update donut items
+    setDonutItems(prev => {
+      const idx = prev.findIndex(item => item.title.toLowerCase() === expense.category.toLowerCase());
+      if (idx >= 0) {
+        const updated = [...prev];
+        updated[idx] = { ...updated[idx], amount: updated[idx].amount + expense.amount };
+        return updated;
+      }
+      return [...prev, { title: expense.category, amount: expense.amount, color: '#ec4899' }];
+    });
+
+    // 4. Update recent items
+    setRecentItems(prev => {
+      const now = new Date();
+      const dateFormatted = `${String(now.getDate()).padStart(2, '0')} ${now.toLocaleDateString('en-US', { month: 'short' })}, ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return [
+        {
+          id: Date.now(),
+          title: expense.title,
+          date: dateFormatted,
+          percent: 20,
+          color: expense.category === 'Food' ? '#10b981' : expense.category === 'Transportation' ? '#06b6d4' : '#8b5cf6',
+          icon: expense.category === 'Food' ? UtensilsCrossed : expense.category === 'Transportation' ? Car : Film,
+          amount: expense.amount
+        },
+        ...prev.slice(0, 3)
+      ];
+    });
+
+    // Confetti micro-celebration
+    confetti({
+      particleCount: 60,
+      spread: 60,
+      origin: { y: 0.7 }
+    });
   };
 
-  const handleDeleteTransactions = async (ids) => {
-    try {
-      await deleteTransactions(ids);
-      showToast(`Deleted ${ids.length} transaction${ids.length > 1 ? 's' : ''}`);
-    } catch (err) {
-      showToast('Failed to delete transactions', 'error');
-    }
-  };
-
-  const handleBulkRecategorize = async (ids, newCategory) => {
-    try {
-      await bulkRecategorize(ids, newCategory);
-      showToast(`Recategorized ${ids.length} transaction${ids.length > 1 ? 's' : ''}`);
-    } catch (err) {
-      showToast('Failed to recategorize transactions', 'error');
-    }
-  };
-
-  // Handlers for Budget Caps
-  const handleUpdateCategoryCap = async (categoryId, newCap) => {
-    try {
-      await updateCategoryCap(categoryId, newCap);
-      showToast('Budget cap updated');
-    } catch (err) {
-      showToast('Failed to update cap', 'error');
-    }
-  };
-
-  // Handlers for Recurring
-  const handleSaveRecurringRule = async (rule) => {
-    try {
-      await saveRecurringRule(rule);
-      showToast('Recurring subscription rule saved');
-    } catch (err) {
-      showToast('Failed to save subscription rule', 'error');
-    }
-  };
-
-  const handleDeleteRecurringRule = async (ruleId) => {
-    try {
-      await deleteRecurringRule(ruleId);
-      showToast('Subscription rule removed');
-    } catch (err) {
-      showToast('Failed to delete subscription rule', 'error');
-    }
-  };
-
-  const handleLogUpcomingBill = async (bill) => {
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      await saveTransaction({
-        date: today,
-        amount: bill.amount,
-        category: bill.category,
-        description: `${bill.title} (Scheduled)`,
-        paymentMethod: 'Direct Debit',
-        isRecurring: true,
-        tags: ['subscription', 'autopay']
-      });
-
-      // Roll next due date forward by 1 month
-      const curDue = new Date(bill.nextDueDate);
-      curDue.setMonth(curDue.getMonth() + 1);
-      const nextDueStr = curDue.toISOString().split('T')[0];
-      await saveRecurringRule({
-        ...bill,
-        nextDueDate: nextDueStr
-      });
-
-      showToast(`Logged payment of £${Math.abs(bill.amount).toFixed(2)} for ${bill.title}`);
-    } catch (err) {
-      showToast('Failed to log payment', 'error');
-    }
-  };
-
-  // Statement Import Completion
-  const handleImportComplete = async (parsedRows) => {
-    try {
-      const result = await importTransactions(parsedRows);
-      showToast(`Imported ${result.importedCount} transactions (${result.skippedDuplicates} duplicates skipped)`);
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    } catch (err) {
-      showToast(err.message || 'Import failed', 'error');
-    }
+  const handleLogout = () => {
+    logoutGoogle();
+    setIsGoogleAuthOpen(true);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors">
-      {/* Top Navbar */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenNewTransaction={() => { setEditingTx(null); setIsTxModalOpen(true); }}
-        onOpenImport={() => setIsImportModalOpen(true)}
-        onOpenDataManager={() => setIsDataManagerModalOpen(true)}
-        darkMode={darkMode}
-        setDarkMode={setDarkMode}
-      />
+    <div className="min-h-screen bg-[#F0F1F5] dark:bg-[#0c0c10] text-slate-900 dark:text-slate-100 flex items-center justify-center p-3 sm:p-6 lg:p-8 font-sans selection:bg-purple-500/20 selection:text-purple-600">
+      {/* Main Canvas Container (matches the rounded card UI in the screenshot) */}
+      <div className="w-full max-w-[1380px] bg-white dark:bg-[#121216] rounded-[36px] shadow-2xl shadow-slate-300/50 dark:shadow-black/60 border border-slate-200/80 dark:border-slate-800/80 flex flex-col md:flex-row overflow-hidden transition-all duration-300">
+        
+        {/* Left Sidebar */}
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenPremium={() => setIsPremiumOpen(true)}
+        />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-8 space-y-6">
-        {/* Module A: Overview & Cash Flow Dashboard */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Metric Cards */}
-            <MetricCards transactions={transactions} />
+        {/* Right Main Content Area */}
+        <main className="flex-1 p-6 lg:p-8 space-y-6 overflow-y-auto max-h-[92vh]">
+          {/* Top Header */}
+          <TopHeader
+            currentUser={currentUser}
+            onOpenAddExpense={() => setIsAddExpenseOpen(true)}
+            onOpenGoogleAuth={() => setIsGoogleAuthOpen(true)}
+            onLogout={handleLogout}
+          />
 
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              <div className="lg:col-span-7">
-                <CashFlowChart transactions={transactions} />
-              </div>
-              <div className="lg:col-span-5">
-                <CategoryDonutChart transactions={transactions} categories={categories} />
-              </div>
-            </div>
+          {/* Tab Content */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              {/* Row 1: Dark Hero Statistics Banner */}
+              <HeroStatsCard
+                currentUser={currentUser}
+                outcome={stats.outcome}
+                income={stats.income}
+              />
 
-            {/* Upcoming Bills & Quick Ledger preview */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-5">
-                <UpcomingBills
-                  recurringRules={recurringRules}
-                  categories={categories}
-                  onLogPayment={handleLogUpcomingBill}
-                />
-              </div>
+              {/* Row 2: Four Key Modules Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                {/* Center Left: Recent Transactions (5 cols) */}
+                <div className="lg:col-span-4">
+                  <RecentTransactionsCard items={recentItems} />
+                </div>
 
-              <div className="lg:col-span-7">
-                <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-sm flex flex-col justify-between h-full">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                        Recent Activity
-                      </h3>
-                      <p className="text-xs text-slate-400">
-                        Latest settled transactions in your ledger
-                      </p>
-                    </div>
+                {/* Center Middle: Quick Add Expense Dark Card (4 cols) */}
+                <div className="lg:col-span-4">
+                  <QuickAddExpenseCard onAddExpense={handleAddExpense} />
+                </div>
 
-                    <button
-                      onClick={() => setActiveTab('ledger')}
-                      className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
-                    >
-                      View Full Ledger →
-                    </button>
-                  </div>
+                {/* Right Column: Reports & Donut Breakdown (4 cols) */}
+                <div className="lg:col-span-4 space-y-6 flex flex-col justify-between">
+                  {/* Card 1: Reports Chart with $3400 Tooltip */}
+                  <ReportsCard />
 
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                    {transactions.slice(0, 5).map(t => (
-                      <div key={t.id} className="py-2.5 flex items-center justify-between text-xs">
-                        <div className="min-w-0 pr-2">
-                          <p className="font-semibold text-slate-900 dark:text-white truncate">
-                            {t.description}
-                          </p>
-                          <span className="text-[11px] text-slate-400 font-mono">
-                            {t.date} • {t.category}
-                          </span>
-                        </div>
-                        <span className={`font-mono font-bold whitespace-nowrap ${t.amount > 0 ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}>
-                          {t.amount > 0 ? '+' : ''}£{Math.abs(t.amount).toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Card 2: 50% Center Donut Chart with Category Breakdown */}
+                  <SpendingDonutCard breakdown={donutItems} />
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Module B: Transaction Ledger & Entry */}
-        {activeTab === 'ledger' && (
-          <TransactionLedger
-            transactions={transactions}
-            categories={categories}
-            onEditTransaction={(tx) => { setEditingTx(tx); setIsTxModalOpen(true); }}
-            onDeleteTransactions={handleDeleteTransactions}
-            onBulkRecategorize={handleBulkRecategorize}
-            onNewTransaction={() => { setEditingTx(null); setIsTxModalOpen(true); }}
-          />
-        )}
+          {/* Transactions Tab */}
+          {activeTab === 'transactions' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                    All Transactions
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Search, filter, categorize, and export your cash-flow history
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="px-3.5 py-2 rounded-2xl bg-[#18181c] text-white text-xs font-bold hover:bg-black transition-all"
+                >
+                  Import Statement
+                </button>
+              </div>
 
-        {/* Module C: Spending Caps & Budget Enforcement */}
-        {activeTab === 'caps' && (
-          <SpendingCaps
-            transactions={transactions}
-            categories={categories}
-            onUpdateCategoryCap={handleUpdateCategoryCap}
-          />
-        )}
+              <TransactionLedger
+                transactions={allTransactions}
+                categories={categories}
+                onEditTransaction={() => setIsAddExpenseOpen(true)}
+                onDeleteTransactions={(ids) => {
+                  deleteTransactions(ids);
+                  setAllTransactions(getTransactions());
+                }}
+                onBulkRecategorize={(ids, cat) => {
+                  bulkRecategorize(ids, cat);
+                  setAllTransactions(getTransactions());
+                }}
+                onNewTransaction={() => setIsAddExpenseOpen(true)}
+              />
+            </div>
+          )}
 
-        {/* Module D: Recurring Subscriptions Tracker */}
-        {activeTab === 'recurring' && (
-          <RecurringTracker
-            recurringRules={recurringRules}
-            categories={categories}
-            onSaveRule={handleSaveRecurringRule}
-            onDeleteRule={handleDeleteRecurringRule}
-            onLogPayment={handleLogUpcomingBill}
-          />
-        )}
-      </main>
+          {/* Reports Tab */}
+          {activeTab === 'reports' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ReportsCard />
+              <SpendingDonutCard breakdown={donutItems} />
+              <div className="md:col-span-2">
+                <RecentTransactionsCard items={recentItems} />
+              </div>
+            </div>
+          )}
 
-      {/* Transaction Modal / Fast Entry Drawer */}
-      <TransactionModal
-        isOpen={isTxModalOpen}
-        onClose={() => setIsTxModalOpen(false)}
-        onSave={handleSaveTransaction}
-        categories={categories}
-        initialData={editingTx}
+          {/* Budgets Tab */}
+          {activeTab === 'budgets' && (
+            <SpendingCaps
+              transactions={allTransactions}
+              categories={categories}
+              onUpdateCategoryCap={(catId, cap) => {
+                updateCategoryCap(catId, cap);
+                setCategories(getCategories());
+              }}
+            />
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <div className="max-w-2xl space-y-6">
+              <div className="p-6 rounded-[28px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Google Account Session
+                </h3>
+                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={currentUser?.avatar}
+                      alt={currentUser?.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <div className="font-bold text-xs text-slate-900 dark:text-white">
+                        {currentUser?.name}
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono">
+                        {currentUser?.email}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setIsGoogleAuthOpen(true)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700"
+                  >
+                    Switch Account
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 rounded-[28px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Data Vault & Backups
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Export your full encrypted JSON ledger or restore an existing backup.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setIsDataManagerOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-[#18181c] text-white text-xs font-bold hover:bg-black"
+                  >
+                    Manage Vault & Backups
+                  </button>
+                  <button
+                    onClick={() => setIsImportModalOpen(true)}
+                    className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  >
+                    Import Bank Statement
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Google Sign In / Sign Up Modal */}
+      <GoogleAuthModal
+        isOpen={isGoogleAuthOpen}
+        onClose={() => setIsGoogleAuthOpen(false)}
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
+          confetti({ particleCount: 50, spread: 60 });
+        }}
       />
 
-      {/* Module E: Bank Statement Parser Modal */}
+      {/* Upgrade Pro Modal */}
+      <PremiumModal
+        isOpen={isPremiumOpen}
+        onClose={() => setIsPremiumOpen(false)}
+      />
+
+      {/* Add Expense Modal */}
+      <AddExpenseModal
+        isOpen={isAddExpenseOpen}
+        onClose={() => setIsAddExpenseOpen(false)}
+        onAddExpense={handleAddExpense}
+      />
+
+      {/* Statement Import Modal */}
       <StatementImportModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        onImportComplete={handleImportComplete}
+        onImportComplete={(rows) => {
+          setAllTransactions(getTransactions());
+        }}
         categories={categories}
       />
 
-      {/* Module F: Privacy Vault & Backup Modal */}
+      {/* Data Vault Modal */}
       <DataManagerModal
-        isOpen={isDataManagerModalOpen}
-        onClose={() => setIsDataManagerModalOpen(false)}
-        transactionsCount={transactions.length}
-        recurringCount={recurringRules.length}
+        isOpen={isDataManagerOpen}
+        onClose={() => setIsDataManagerOpen(false)}
+        transactionsCount={allTransactions.length}
+        recurringCount={5}
       />
-
-      {/* Floating Toast Notification */}
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-50 animate-bounce">
-          <div className={`px-4 py-2.5 rounded-2xl shadow-xl text-xs font-semibold border flex items-center gap-2 ${
-            toast.type === 'error'
-              ? 'bg-rose-500 text-white border-rose-600'
-              : 'bg-emerald-600 text-white border-emerald-500'
-          }`}>
-            <span>{toast.message}</span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
