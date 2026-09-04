@@ -131,7 +131,7 @@ export default function QuickAddPanel({ onSaveExpense }) {
                         : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 bg-slate-50/40 dark:bg-slate-800/30'
                     }`}
                   >
-                    <FunCategoryIcon name={cat.id} className="scale-[0.8]" />
+                    <FunCategoryIcon name={cat.id} />
                     <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 mt-0.5 truncate max-w-full leading-tight">
                       {cat.label}
                     </span>

@@ -1,9 +1,10 @@
-﻿import React from 'react';
+import React from 'react';
 import { Plus, Check, ArrowRight } from 'lucide-react';
 import FunCategoryIcon, { FUN_ICONS } from './FunCategoryIcon';
 
 export default function CenterDashboard({
   transactions = [],
+  userName = 'Roshan',
   onOpenQuickAdd,
   onRecordScheduledPayment,
   scheduledRecorded = false,
@@ -47,7 +48,7 @@ export default function CenterDashboard({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Hello, Roshan
+            Hello, {userName}
           </h1>
           <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-0.5">
             {currentMonthTx.length} entries this month
@@ -213,7 +214,7 @@ export default function CenterDashboard({
                 <div key={item.category} className="space-y-1">
                   <div className="flex items-center justify-between text-xs font-semibold">
                     <div className="flex items-center gap-1.5 capitalize text-slate-700 dark:text-slate-200">
-                      <FunCategoryIcon name={item.category} className="scale-75" />
+                      <FunCategoryIcon name={item.category} className="w-6 h-6 [&>svg]:w-6 [&>svg]:h-6" />
                       <span>{item.category.replace('_', ' ')}</span>
                     </div>
                     <span className="font-mono text-slate-900 dark:text-white">

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ShieldCheck,
@@ -62,8 +62,8 @@ export default function DataManagerModal({
   };
 
   const handleWipeData = async () => {
-    if (window.confirm('WARNING: This will permanently wipe all transactions and subscriptions from your local device. Continue?')) {
-      await wipeAllData();
+    if (window.confirm('WARNING: This will permanently wipe all transactions and subscriptions from your local device. You will be taken to the Onboarding screen to start fresh. Continue?')) {
+      await wipeAllData(true);
       onClose();
     }
   };

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * FlowCash Local-First Storage Engine
  * Dual-layer persistence: Tauri FS / Web localStorage fallback
  * Optimistic updates, event-driven reactive sync, and deduplication
@@ -63,10 +63,13 @@ const initCache = () => {
 
     const rawPref = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
     memoryCache.preferences = rawPref ? JSON.parse(rawPref) : {
+      userName: 'Roshan',
       currency: 'GBP',
       currencySymbol: '£',
-      theme: 'dark',
+      theme: 'light',
       hasSeenIntro: true,
+      storageFolder: 'C:\\Users\\rosha\\Documents\\FlowCash\\Vault',
+      monthlyIncome: 2500,
     };
 
     // If first time, commit initial dataset to localStorage
@@ -79,7 +82,15 @@ const initCache = () => {
     memoryCache.transactions = INITIAL_TRANSACTIONS;
     memoryCache.categories = INITIAL_CATEGORIES;
     memoryCache.recurring = INITIAL_RECURRING_RULES;
-    memoryCache.preferences = { currency: 'GBP', currencySymbol: '£', theme: 'dark' };
+    memoryCache.preferences = {
+      userName: 'Roshan',
+      currency: 'GBP',
+      currencySymbol: '£',
+      theme: 'light',
+      hasSeenIntro: true,
+      storageFolder: 'C:\\Users\\rosha\\Documents\\FlowCash\\Vault',
+      monthlyIncome: 2500,
+    };
   }
 };
 
@@ -425,15 +436,57 @@ export const resetToDemoData = async () => {
 };
 
 /**
- * Wipe all data
+ * Wipe all data with option to trigger Onboarding
  */
-export const wipeAllData = async () => {
+export const wipeAllData = async (triggerOnboarding = true) => {
   memoryCache.transactions = [];
   memoryCache.recurring = [];
+
+  if (triggerOnboarding) {
+    if (!memoryCache.preferences) initCache();
+    memoryCache.preferences = {
+      ...memoryCache.preferences,
+      hasSeenIntro: false,
+    };
+    await persist(STORAGE_KEYS.PREFERENCES, memoryCache.preferences);
+  }
 
   await persist(STORAGE_KEYS.TRANSACTIONS, []);
   await persist(STORAGE_KEYS.RECURRING, []);
 
   notifyListeners('transactions_updated', {});
   notifyListeners('recurring_updated', {});
+  notifyListeners('preferences_updated', memoryCache.preferences);
+};
+
+/**
+ * Preferences API
+ */
+export const getPreferences = () => {
+  if (!memoryCache.preferences) initCache();
+  return {
+    userName: 'Roshan',
+    currency: 'GBP',
+    currencySymbol: '£',
+    theme: 'light',
+    hasSeenIntro: true,
+    storageFolder: 'C:\\Users\\rosha\\Documents\\FlowCash\\Vault',
+    monthlyIncome: 2500,
+    ...memoryCache.preferences,
+  };
+};
+
+export const savePreferences = async (newPref) => {
+  if (!memoryCache.preferences) initCache();
+  memoryCache.preferences = {
+    ...getPreferences(),
+    ...newPref,
+  };
+  await persist(STORAGE_KEYS.PREFERENCES, memoryCache.preferences);
+  notifyListeners('preferences_updated', memoryCache.preferences);
+  return memoryCache.preferences;
+};
+
+export const setStorageFolder = async (folderPath) => {
+  return await savePreferences({ storageFolder: folderPath });
 };
